@@ -1,0 +1,11 @@
+[
+ "0001_core.sql",
+ "0002_sales.sql",
+ "0003_estimating.sql",
+ "0004_projects_finance.sql",
+ "0005_automation.sql",
+ "0006_rules_intake_views.sql",
+ "0007_security.sql",
+ "0008_import_v1.sql",
+ "0009_thumbtack.sql"
+]

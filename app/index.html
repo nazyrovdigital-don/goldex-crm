@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B1A2E">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GOLDEX">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<title>GOLDEX CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="boot" class="boot"><div class="brand">✦ GOLDEX</div><div class="boot-msg" id="boot-msg">Loading…</div></div>
+
+<div id="login" class="login" hidden>
+  <form class="login-card" id="login-form">
+    <div class="brand">✦ GOLDEX</div>
+    <div class="sub">CONSTRUCTION LLC · CRM</div>
+    <div class="form-group"><label class="form-label">Email</label><input name="email" type="email" autocomplete="username" required></div>
+    <div class="form-group"><label class="form-label">Password</label><input name="password" type="password" autocomplete="current-password" required></div>
+    <button class="btn btn-gold btn-block" type="submit">Sign in</button>
+    <button class="btn btn-link" type="button" id="forgot">Forgot password?</button>
+    <div class="login-err" id="login-err"></div>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">✦ GOLDEX</div>
+      <div class="sub">CONSTRUCTION LLC</div>
+    </div>
+    <div id="nav"></div>
+    <div class="sidebar-foot" id="sidebar-foot"></div>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Menu">☰</button>
+      <div class="topbar-title" id="page-title"></div>
+      <div class="search" id="search">
+        <span>⌕</span><input id="search-input" placeholder="Search customers, phone, address, invoices…" autocomplete="off">
+        <div class="search-results" id="search-results" hidden></div>
+      </div>
+      <button class="icon-btn" id="bell" aria-label="Notifications">🔔<span class="dot" id="bell-count" hidden></span></button>
+      <button class="btn btn-gold" data-act="quickAdd">+ New</button>
+    </header>
+    <div class="notif-panel" id="notif-panel" hidden></div>
+    <div id="demo-banner" class="demo-banner" hidden></div>
+    <main class="content" id="content"></main>
+    <nav class="mobile-tabs" id="mobile-tabs">
+      <a href="#/dashboard" data-page="dashboard"><span>⬡</span>Today</a>
+      <a href="#/pipeline" data-page="pipeline"><span>◈</span>Pipeline</a>
+      <button data-act="quickAdd" class="mt-add" aria-label="New"><span>＋</span></button>
+      <a href="#/tasks" data-page="tasks"><span>☑</span>Tasks</a>
+      <a href="#/projects" data-page="projects"><span>▣</span>Projects</a>
+    </nav>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" hidden>
+  <div class="modal" id="modal-inner" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" data-act="closeModal" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+<div id="toasts" class="toasts"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

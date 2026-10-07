@@ -1,0 +1,334 @@
+{
+ "customers": [
+  {
+   "id": "c1",
+   "first": "Alex",
+   "last": "Rivera",
+   "phone": "(858) 555-0101",
+   "email": "alex.rivera@example.com",
+   "address": "100 Example Ave, La Jolla CA 92037",
+   "source": "Google",
+   "status": "Active",
+   "notes": "Sample repeat customer with rental properties",
+   "created": "2026-09-01"
+  },
+  {
+   "id": "c2",
+   "first": "Jamie",
+   "last": "Lee",
+   "phone": "(760) 555-0102",
+   "email": "jamie.lee@example.com",
+   "address": "200 Sample St, Carlsbad CA 92008",
+   "source": "Thumbtack",
+   "status": "Active",
+   "notes": "",
+   "created": "2026-09-10"
+  },
+  {
+   "id": "c3",
+   "first": "Sam",
+   "last": "Novak",
+   "phone": "(619) 555-0103",
+   "email": "sam.novak@example.com",
+   "address": "300 Demo Rd, San Diego CA 92107",
+   "source": "Referral",
+   "status": "Active",
+   "notes": "Sample customer",
+   "created": "2026-09-20"
+  }
+ ],
+ "leads": [
+  {
+   "id": "l1",
+   "customer": "c1",
+   "type": "Cabinet Installation",
+   "value": 3200,
+   "stage": "ESTIMATE",
+   "source": "Google",
+   "desc": "Kitchen cabinet install, 18 units, island included",
+   "created": "2026-10-01",
+   "followup": "2026-10-05",
+   "notes": ""
+  },
+  {
+   "id": "l2",
+   "customer": "c2",
+   "type": "Flooring",
+   "value": 2800,
+   "stage": "QUALIFYING",
+   "source": "Thumbtack",
+   "desc": "LVP flooring ~650 sqft living room + hallway",
+   "created": "2026-10-02",
+   "followup": "2026-10-04",
+   "notes": "Needs same-week schedule"
+  },
+  {
+   "id": "l3",
+   "customer": "c3",
+   "type": "Drywall",
+   "value": 1500,
+   "stage": "NEW LEAD",
+   "source": "Referral",
+   "desc": "Garage drywall finishing, ~400 sqft",
+   "created": "2026-10-03",
+   "followup": "2026-10-06",
+   "notes": ""
+  }
+ ],
+ "projects": [
+  {
+   "id": "p1",
+   "name": "Rivera Kitchen Cabinets",
+   "customer": "c1",
+   "type": "Cabinet Installation",
+   "value": 3500,
+   "status": "IN PROGRESS",
+   "start": "2026-10-01",
+   "end": "2026-10-08",
+   "desc": "17 upper and lower cabinets, crown molding, hardware",
+   "deposit": 1000,
+   "deposited": true,
+   "notes": "",
+   "tasks": [],
+   "materials": [],
+   "expenses": [],
+   "photos": [],
+   "hours": 0
+  }
+ ],
+ "estimates": [
+  {
+   "id": "e1",
+   "customer": "c1",
+   "project": "Kitchen Cabinet Install",
+   "items": [
+    {
+     "desc": "Cabinet Installation",
+     "qty": 17,
+     "unit": "per cabinet",
+     "price": 130
+    },
+    {
+     "desc": "Crown Molding",
+     "qty": 24,
+     "unit": "linear ft",
+     "price": 12
+    },
+    {
+     "desc": "Hardware Install",
+     "qty": 17,
+     "unit": "per cabinet",
+     "price": 15
+    }
+   ],
+   "discount": 0,
+   "tax": 0,
+   "notes": "Excludes cabinet procurement",
+   "status": "Draft",
+   "created": "2026-09-28",
+   "expires": "2026-10-28"
+  }
+ ],
+ "proposals": [],
+ "tasks": [
+  {
+   "id": "t1",
+   "title": "Call Sam re: drywall quote",
+   "project": "",
+   "customer": "c3",
+   "due": "2026-10-04",
+   "priority": "High",
+   "status": "Pending",
+   "notes": ""
+  },
+  {
+   "id": "t2",
+   "title": "Order crown molding for Rivera job",
+   "project": "p1",
+   "customer": "c1",
+   "due": "2026-10-05",
+   "priority": "High",
+   "status": "Pending",
+   "notes": "Home Depot Carlsbad"
+  },
+  {
+   "id": "t3",
+   "title": "Send invoice to Alex Rivera",
+   "project": "p1",
+   "customer": "c1",
+   "due": "2026-10-08",
+   "priority": "Medium",
+   "status": "Pending",
+   "notes": ""
+  }
+ ],
+ "invoices": [
+  {
+   "id": "inv1",
+   "customer": "c1",
+   "project": "p1",
+   "number": "INV-001",
+   "amount": 3500,
+   "paid": 1000,
+   "status": "Partially Paid",
+   "due": "2026-10-08",
+   "created": "2026-10-01",
+   "notes": "Deposit collected $1,000"
+  }
+ ],
+ "payments": [
+  {
+   "id": "pay1",
+   "customer": "c1",
+   "project": "p1",
+   "invoice": "inv1",
+   "amount": 1000,
+   "date": "2026-10-01",
+   "method": "Zelle",
+   "ref": "",
+   "notes": "Deposit"
+  }
+ ],
+ "expenses": [
+  {
+   "id": "ex1",
+   "project": "p1",
+   "date": "2026-10-02",
+   "category": "Materials",
+   "vendor": "Home Depot",
+   "desc": "Cabinet screws, shims, adhesive",
+   "amount": 87,
+   "receipt": ""
+  },
+  {
+   "id": "ex2",
+   "project": "p1",
+   "date": "2026-10-03",
+   "category": "Materials",
+   "vendor": "Home Depot",
+   "desc": "Crown molding 3 packs",
+   "amount": 145,
+   "receipt": ""
+  }
+ ],
+ "pricebook": [
+  {
+   "id": "pb1",
+   "service": "Cabinet Installation",
+   "item": "Cabinet install",
+   "unit": "per cabinet",
+   "sell": 130,
+   "labor": 55,
+   "material": 0,
+   "notes": "",
+   "active": true
+  },
+  {
+   "id": "pb2",
+   "service": "Cabinet Installation",
+   "item": "Crown molding",
+   "unit": "linear ft",
+   "sell": 12,
+   "labor": 5,
+   "material": 3,
+   "notes": "",
+   "active": true
+  },
+  {
+   "id": "pb3",
+   "service": "Flooring",
+   "item": "LVP install",
+   "unit": "sq ft",
+   "sell": 4.5,
+   "labor": 2.5,
+   "material": 0,
+   "notes": "Material separate",
+   "active": true
+  },
+  {
+   "id": "pb4",
+   "service": "Drywall",
+   "item": "Drywall finish",
+   "unit": "sq ft",
+   "sell": 3.5,
+   "labor": 1.8,
+   "material": 0.8,
+   "notes": "",
+   "active": true
+  },
+  {
+   "id": "pb5",
+   "service": "Door Installation",
+   "item": "Interior door install",
+   "unit": "per door",
+   "sell": 185,
+   "labor": 90,
+   "material": 0,
+   "notes": "",
+   "active": true
+  },
+  {
+   "id": "pb6",
+   "service": "Custom",
+   "item": "Flat rate project",
+   "unit": "project",
+   "sell": 0,
+   "labor": 0,
+   "material": 0,
+   "notes": "Custom pricing",
+   "active": true
+  }
+ ],
+ "timeentries": [
+  {
+   "id": "te1",
+   "project": "p1",
+   "date": "2026-10-01",
+   "start": "07:30",
+   "end": "15:30",
+   "break": 30,
+   "hours": 7.5,
+   "notes": "Day 1 - upper cabinets"
+  },
+  {
+   "id": "te2",
+   "project": "p1",
+   "date": "2026-10-02",
+   "start": "07:00",
+   "end": "14:00",
+   "break": 30,
+   "hours": 6.5,
+   "notes": "Day 2 - lower cabinets"
+  }
+ ],
+ "calendar": [
+  {
+   "id": "ev1",
+   "title": "Rivera Cabinet Job",
+   "date": "2026-10-01",
+   "type": "project",
+   "ref": "p1"
+  },
+  {
+   "id": "ev2",
+   "title": "Rivera Cabinet Job",
+   "date": "2026-10-02",
+   "type": "project",
+   "ref": "p1"
+  },
+  {
+   "id": "ev3",
+   "title": "Sam Site Visit",
+   "date": "2026-10-06",
+   "type": "estimate",
+   "ref": ""
+  },
+  {
+   "id": "ev4",
+   "title": "Rivera Final Walkthrough",
+   "date": "2026-10-08",
+   "type": "appointment",
+   "ref": "p1"
+  }
+ ]
+}
