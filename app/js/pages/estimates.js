@@ -44,7 +44,7 @@ let pricebook = [];
 const COLS = [['unit_price', 'Price/unit'], ['unit_labor_hours', 'Labor h/unit'], ['unit_labor_cost', 'Labor $/unit'],
   ['unit_material_cost', 'Material $/unit'], ['unit_subcontractor_cost', 'Sub $/unit'], ['unit_other_cost', 'Other $/unit']];
 
-const lineRow = (it = {}) => html`<tr class="line" data-pb="${it.pricebook_item_id || ''}">
+const lineRow = (it = {}) => html`<tr class="line" data-type="service" data-pb="${it.pricebook_item_id || ''}">
   <td><input data-k="description" value="${it.description || ''}" placeholder="Description"><div class="hint">${it.category || ''}</div></td>
   <td class="w-qty"><input data-k="quantity" type="number" step="any" value="${it.quantity ?? 1}"></td>
   <td style="width:90px"><input data-k="unit" value="${it.unit || ''}" placeholder="unit"></td>
@@ -52,10 +52,35 @@ const lineRow = (it = {}) => html`<tr class="line" data-pb="${it.pricebook_item_
   <td class="num" data-out="total"></td><td data-out="margin"></td>
   <td><button class="btn btn-link red" data-act="removeLine" title="Remove line">✕</button></td></tr>`;
 
+// Material lines: you enter what it costs you; the price is cost + markup.
+const matRow = (it = {}) => html`<tr class="line mat" data-type="material">
+  <td><input data-k="description" value="${it.description || ''}" placeholder="Material (e.g. Plywood 3/4 in)"></td>
+  <td class="w-qty"><input data-k="quantity" type="number" step="any" value="${it.quantity ?? 1}"></td>
+  <td style="width:90px"><input data-k="unit" value="${it.unit || ''}" placeholder="sheet, box…"></td>
+  <td class="w-money"><input data-k="unit_material_cost" type="number" step="any" value="${it.unit_material_cost ?? 0}"></td>
+  <td class="num" data-out="price"></td><td class="num" data-out="total"></td><td class="num green" data-out="profit"></td>
+  <td><button class="btn btn-link red" data-act="removeLine" title="Remove line">✕</button></td></tr>`;
+
+const tierLabel = (cost) => { const t = tiers(); const i = t.findIndex((x) => x.up_to == null || cost < Number(x.up_to));
+  return i === 0 ? `under $${t[0].up_to}` : t[i]?.up_to == null ? `$${t[i - 1]?.up_to}+` : `$${t[i - 1].up_to}–$${t[i].up_to}`; };
+const tiers = () => setting('materials', {}).tiers || [{ up_to: 500, markup: 20 }, { up_to: 2000, markup: 15 }, { up_to: null, markup: 10 }];
+const tierFor = (cost) => (tiers().find((t) => t.up_to == null || cost < Number(t.up_to)) || { markup: 15 }).markup;
+function markupPct(root) {
+  const cost = [...root.querySelectorAll('tr.mat')].reduce((a, tr) =>
+    a + Number(tr.querySelector('[data-k="quantity"]').value || 0) * Number(tr.querySelector('[data-k="unit_material_cost"]').value || 0), 0);
+  const ov = root.querySelector('[name=materials_markup_override]')?.value;
+  return { cost, pct: ov !== '' && ov != null ? Number(ov) : tierFor(cost), override: ov !== '' && ov != null };
+}
+
 function readLines(root) {
+  const { pct } = markupPct(root);
   return [...root.querySelectorAll('tr.line')].map((tr, i) => {
-    const o = { sort_order: i, pricebook_item_id: tr.dataset.pb || null };
+    const o = { sort_order: i, item_type: tr.dataset.type || 'service', pricebook_item_id: tr.dataset.pb || null };
     tr.querySelectorAll('[data-k]').forEach((el) => { o[el.dataset.k] = el.type === 'number' ? Number(el.value || 0) : el.value.trim(); });
+    if (o.item_type === 'material') {
+      Object.assign(o, { pricebook_item_id: null, unit_labor_hours: 0, unit_labor_cost: 0, unit_subcontractor_cost: 0, unit_other_cost: 0,
+        unit_price: Math.round(o.unit_material_cost * (1 + pct / 100) * 100) / 100 });
+    }
     return o;
   }).filter((l) => l.description);
 }
@@ -63,7 +88,7 @@ function readLines(root) {
 function recalc(root) {
   const lines = readLines(root);
   const t = { sell: 0, hours: 0, labor: 0, material: 0, sub: 0, other: 0 };
-  root.querySelectorAll('tr.line').forEach((tr) => {
+  root.querySelectorAll('tr.line:not(.mat)').forEach((tr) => {
     const g = (k) => Number(tr.querySelector(`[data-k="${k}"]`).value || 0);
     const q = g('quantity'); const price = g('unit_price');
     const cost = g('unit_labor_cost') + g('unit_material_cost') + g('unit_subcontractor_cost') + g('unit_other_cost');
@@ -71,6 +96,16 @@ function recalc(root) {
     const m = price > 0 ? ((price - cost) / price) * 100 : null;
     tr.querySelector('[data-out="margin"]').innerHTML = String(marginBadge(m == null ? null : Math.round(m * 10) / 10));
   });
+  const mk = markupPct(root);
+  root.querySelectorAll('tr.mat').forEach((tr) => {
+    const q = Number(tr.querySelector('[data-k="quantity"]').value || 0); const c = Number(tr.querySelector('[data-k="unit_material_cost"]').value || 0);
+    const price = Math.round(c * (1 + mk.pct / 100) * 100) / 100;
+    tr.querySelector('[data-out="price"]').textContent = money(price, true);
+    tr.querySelector('[data-out="total"]').textContent = money(q * price, true);
+    tr.querySelector('[data-out="profit"]').textContent = '+' + money(q * (price - c), true);
+  });
+  const mi = root.querySelector('#mat-info');
+  if (mi) mi.innerHTML = String(html`Material cost <b>${money(mk.cost, true)}</b> · markup <b class="gold">${mk.pct}%</b> ${mk.override ? '(override)' : `(tier: ${tierLabel(mk.cost)})`} · customer pays <b>${money(mk.cost * (1 + mk.pct / 100), true)}</b> · markup profit <b class="green">${money(mk.cost * mk.pct / 100, true)}</b>`);
   for (const l of lines) {
     t.sell += l.quantity * l.unit_price; t.hours += l.quantity * l.unit_labor_hours; t.labor += l.quantity * l.unit_labor_cost;
     t.material += l.quantity * l.unit_material_cost; t.sub += l.quantity * l.unit_subcontractor_cost; t.other += l.quantity * l.unit_other_cost;
@@ -104,7 +139,8 @@ async function saveEstimate(root, id) {
   const f = readForm(root.querySelector('#est-head'));
   const lines = readLines(root);
   await db.update('estimates', id, { title: f.title || '', customer_id: f.customer_id, expiration_date: f.expiration_date,
-    discount: f.discount || 0, tax: f.tax || 0, notes: f.notes, exclusions: f.exclusions, assumptions: f.assumptions });
+    discount: f.discount || 0, tax: f.tax || 0, notes: f.notes, exclusions: f.exclusions, assumptions: f.assumptions,
+    materials_markup_override: (() => { const v = root.querySelector('[name=materials_markup_override]')?.value; return v === '' || v == null ? null : Number(v); })() });
   await db.removeWhere('estimate_items', { eq: { estimate_id: id } });
   await db.insertMany('estimate_items', lines.map((l) => ({ ...l, estimate_id: id })));
   return db.get('estimates', id);
@@ -147,8 +183,18 @@ page('estimate', {
         <span class="pill-row">${select('pb_pick', [['', '+ Add from price book…'], ...services.flatMap((s) => pb.filter((p) => p.service === s).map((p) => [p.id, `${s} — ${p.item} (${money(p.sell_price, true)}/${p.unit})`]))], '', 'data-change="addPbLine" style="max-width:340px"')}
         <button class="btn btn-dark btn-sm" data-act="addLine">+ Custom line</button></span></div>
       <div class="table-wrap"><table class="lines"><thead><tr><th>Description</th><th>Qty</th><th>Unit</th>${COLS.map(([, l]) => html`<th>${l}</th>`)}<th class="num">Total</th><th>Margin</th><th></th></tr></thead>
-        <tbody id="est-lines">${items.map(lineRow)}</tbody></table></div>
+        <tbody id="est-lines">${items.filter((i) => i.item_type !== 'material').map(lineRow)}</tbody></table></div>
       ${items.length ? '' : html`<div class="hint" id="est-empty">Add items from the price book — sell price and every unit cost are copied in so margin is known before you send.</div>`}
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">Materials we buy (cost + markup)
+        <span class="pill-row"><label class="small muted" style="display:flex;align-items:center;gap:6px">Markup override %
+          <input name="materials_markup_override" type="number" step="1" min="0" max="200" value="${e.materials_markup_override ?? ''}" placeholder="auto" data-recalc style="width:80px"></label>
+        <button class="btn btn-dark btn-sm" data-act="addMatLine">+ Material</button></span></div>
+      <div class="table-wrap"><table class="lines"><thead><tr><th>Material</th><th>Qty</th><th>Unit</th><th>Your cost/unit</th><th class="num">Price/unit</th><th class="num">Total</th><th class="num">Markup</th><th></th></tr></thead>
+        <tbody id="mat-lines">${items.filter((i) => i.item_type === 'material').map(matRow)}</tbody></table></div>
+      <div class="small muted" id="mat-info" style="margin-top:8px"></div>
+      <div class="hint">Customer buying the materials themselves? Leave this empty — the proposal stays labor-only. Add a "Material pickup / delivery trip" from the price book when you have to go get them.</div>
     </div>`;
   },
   after(root) {
@@ -159,6 +205,11 @@ page('estimate', {
 });
 
 register({
+  addMatLine: () => {
+    document.getElementById('mat-lines').insertAdjacentHTML('beforeend', String(matRow()));
+    const rows = document.querySelectorAll('#mat-lines tr'); rows[rows.length - 1].querySelector('[data-k="description"]').focus();
+    recalc(document.getElementById('content'));
+  },
   addLine: () => { document.getElementById('est-lines').insertAdjacentHTML('beforeend', String(lineRow())); recalc(document.getElementById('content')); },
   addPbLine: (_d, el) => {
     const p = pricebook.find((x) => x.id === el.value);

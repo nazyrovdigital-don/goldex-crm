@@ -238,6 +238,34 @@ test('Final invoice paid → review request task (V1 behaviour kept)', async () 
   assert.ok(await one(db, `select 1 from tasks where project_id = $1 and task_type = 'Review Request'`, [prjId]));
 });
 
+test('Materials are priced at cost + tiered markup; the tier follows the estimate total; override and proposal note work', async () => {
+  const c = await one(db, `insert into customers (first_name, phone) values ('Markup', '555') returning id`);
+  const e = await one(db, `insert into estimates (customer_id, title) values ($1, 'Floor job') returning id`, [c.id]);
+  await db.query(`insert into estimate_items (estimate_id, description, quantity, unit_price) values ($1, 'LVP install labor', 500, 3)`, [e.id]);
+  await db.query(`insert into estimate_items (estimate_id, item_type, description, quantity, unit, unit_material_cost) values ($1, 'material', 'Plywood 3/4"', 4, 'sheet', 50)`, [e.id]);
+  let est = await one(db, `select * from estimates where id = $1`, [e.id]);
+  assert.equal(Number(est.materials_cost), 200);
+  assert.equal(Number(est.materials_markup_pct), 20, 'under $500 → 20%');
+  assert.equal(await val(db, `select unit_price::float from estimate_items where estimate_id = $1 and item_type = 'material'`, [e.id]), 60);
+  assert.equal(Number(est.subtotal), 1500 + 240);
+  assert.equal(Number(est.estimated_gross_profit), 1740 - 200, 'markup is profit: $40 on $200 of plywood');
+
+  // Adding $1,800 of LVP moves the order to the 15% tier — every material line re-prices.
+  await db.query(`insert into estimate_items (estimate_id, item_type, description, quantity, unit, unit_material_cost) values ($1, 'material', 'LVP flooring', 500, 'sq ft', 3.6)`, [e.id]);
+  est = await one(db, `select * from estimates where id = $1`, [e.id]);
+  assert.equal(Number(est.materials_cost), 2000);
+  assert.equal(Number(est.materials_markup_pct), 10, '$2,000 and up → 10%');
+  assert.equal(await val(db, `select unit_price::float from estimate_items where estimate_id = $1 and description like 'Plywood%'`, [e.id]), 55);
+  await db.query(`update estimate_items set quantity = 499 where estimate_id = $1 and description = 'LVP flooring'`, [e.id]);
+  assert.equal(Number(await val(db, `select materials_markup_pct from estimates where id = $1`, [e.id])), 15, '$500–$2,000 → 15%');
+
+  await db.query(`update estimates set materials_markup_override = 25 where id = $1`, [e.id]);
+  assert.equal(await val(db, `select unit_price::float from estimate_items where estimate_id = $1 and description like 'Plywood%'`, [e.id]), 62.5);
+  const pid = await val(db, `select create_proposal_from_estimate($1)`, [e.id]);
+  assert.match(await val(db, `select assumptions from proposals where id = $1`, [pid]), /Materials are priced at cost \+ 25%/);
+  assert.ok(await one(db, `select 1 from pricebook_items where item = 'Material pickup / delivery trip' and sell_price = 60`));
+});
+
 test('Lost leads require a reason', async () => {
   const c = await one(db, `insert into customers (first_name) values ('Lost') returning id`);
   const l = await one(db, `insert into leads (customer_id) values ($1) returning id`, [c.id]);

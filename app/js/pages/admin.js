@@ -77,6 +77,15 @@ page('settings', {
       <div class="fieldset"><div class="fieldset-title">Margins</div>
         <div class="form-row">${field('Target gross margin %', input('pricing.target_margin', pr.target_margin, 'type="number"'))}${field('Minimum margin %', input('pricing.minimum_margin', pr.minimum_margin, 'type="number"'))}</div>
         <div class="form-row-3">${field('RED below %', input('margin_thresholds.red', mt.red, 'type="number"'))}${field('WARNING below %', input('margin_thresholds.warning', mt.warning, 'type="number"'))}${field('HEALTHY below % (above = STRONG)', input('margin_thresholds.healthy', mt.healthy, 'type="number"'))}</div></div>
+      <div class="fieldset"><div class="fieldset-title">Materials markup (materials you buy)</div>
+        ${(() => { const t = setting('materials', {}).tiers || [{ up_to: 500, markup: 20 }, { up_to: 2000, markup: 15 }, { up_to: null, markup: 10 }];
+          return html`<div class="form-row-3">
+            ${field(`Under $${t[0].up_to} → %`, input('mt_p1', t[0].markup, 'type="number"'))}
+            ${field(`$${t[0].up_to}–$${t[1].up_to} → %`, input('mt_p2', t[1].markup, 'type="number"'))}
+            ${field(`$${t[1].up_to}+ → %`, input('mt_p3', t[2].markup, 'type="number"'))}</div>
+          <div class="form-row-3">${field('Tier 1 ends at $', input('mt_u1', t[0].up_to, 'type="number"'))}${field('Tier 2 ends at $', input('mt_u2', t[1].up_to, 'type="number"'))}
+            ${field('Pickup / delivery trip $', input('mt_trip', setting('materials', {}).trip_charge ?? 60, 'type="number"'))}</div>`; })()}
+        <div class="hint" style="margin:-6px 0 12px">The tier is chosen by the estimate's total material cost. Each estimate can override it.</div></div>
       <div class="fieldset"><div class="fieldset-title">Deposit</div>
         <div class="form-row">${field('Default deposit %', input('deposit.percent', dep.percent, 'type="number"'))}${field('Maximum deposit $', input('deposit.max_amount', dep.max_amount, 'type="number"'))}</div>
         <div class="hint" style="margin:-6px 0 12px">California B&P Code §7159: a home-improvement down payment may not exceed $1,000 or 10% of the contract, whichever is less. Confirm with CSLB / your attorney before raising these.</div></div>
@@ -150,6 +159,11 @@ register({
   saveSettings: async () => {
     const f = readForm(document.getElementById('set-form'));
     const updates = {};
+    if ('mt_p1' in f) {
+      updates.materials = { ...(setting('materials', {}) || {}), trip_charge: f.mt_trip ?? 60, tiers: [
+        { up_to: f.mt_u1 ?? 500, markup: f.mt_p1 ?? 20 }, { up_to: f.mt_u2 ?? 2000, markup: f.mt_p2 ?? 15 }, { up_to: null, markup: f.mt_p3 ?? 10 }] };
+      for (const k of Object.keys(f)) if (k.startsWith('mt_')) delete f[k];
+    }
     for (const [k, v] of Object.entries(f)) {
       if (k.includes('.')) {
         const [key, prop] = k.split('.');
