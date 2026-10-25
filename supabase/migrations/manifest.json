@@ -8,5 +8,6 @@
  "0007_security.sql",
  "0008_import_v1.sql",
  "0009_thumbtack.sql",
- "0010_materials_markup.sql"
+ "0010_materials_markup.sql",
+ "0011_push.sql"
 ]

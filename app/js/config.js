@@ -9,3 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────
 export const SUPABASE_URL = 'https://izwhebtzcsotpeofsoii.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable_yYrso1BdAmKcYy80v54PQA_3Qd8HNxA';
+
+// Web Push public key (VAPID). Public by design; the private key lives only
+// in Supabase Edge Function secrets.
+export const PUSH_PUBLIC_KEY = 'BB4immjD5xHSepRFbUQel_i6xZK4RH4KD_wYuAECio4oE4YYM3BFWo8r5wnSiGZIFM1dYTWV_IfWm4RhzeTbybQ';

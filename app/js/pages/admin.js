@@ -3,6 +3,7 @@
 import { db, page, register, refresh, state, setting, loadSettings } from '../app.js';
 import { DEMO } from '../db.js';
 import { integrationsTab } from './thumbtack.js';
+import { notificationsTab } from './push.js';
 import { html, raw, money, pct, num, fmtDateTime, ago, badge, modal, closeModal, toast, readForm, need, field, input, textarea,
          select, empty, marginBadge, confirmDialog, toCSV, downloadFile, today } from '../ui.js';
 
@@ -56,8 +57,8 @@ register({
 });
 
 // ── SETTINGS ───────────────────────────────────────────────────────
-let tab = 'company';
-const TABS = [['company', 'Company'], ['pricing', 'Pricing & labor'], ['sales', 'Sales & lists'], ['integrations', 'Integrations'], ['automations', 'Automations'],
+let tab = 'notifications';
+const TABS = [['notifications', 'Notifications'], ['company', 'Company'], ['pricing', 'Pricing & labor'], ['sales', 'Sales & lists'], ['integrations', 'Integrations'], ['automations', 'Automations'],
   ['users', 'Users'], ['data', 'Import / export'], ['audit', 'Audit log']];
 const listText = (k) => (setting(k, []) || []).join('\n');
 
@@ -105,6 +106,7 @@ page('settings', {
       ${field('Closeout checklist', textarea('closeout_checklist', listText('closeout_checklist'), 'style="min-height:180px"'))}</div>
       <button class="btn btn-gold" data-act="saveSettings">Save</button></div>`;
     if (tab === 'integrations') body = await integrationsTab();
+    if (tab === 'notifications') body = await notificationsTab();
     if (tab === 'automations') {
       const [rules, log, pending] = await Promise.all([db.list('automation_rules', { order: ['sort_order', 'name'] }),
         db.list('automation_log', { order: 'created_at desc', limit: 25 }), db.list('scheduled_actions', { eq: { status: 'pending' } })]);

@@ -48,7 +48,7 @@ const filterBar = (leads) => html`<div class="toolbar">
 </div>`;
 
 // ── PIPELINE ───────────────────────────────────────────────────────
-page('pipeline', {
+const pages_pipeline = {
   title: 'Pipeline',
   async render() {
     const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString();
@@ -88,7 +88,8 @@ page('pipeline', {
       });
     });
   },
-});
+};
+page('pipeline', pages_pipeline);
 
 // ── LEADS TABLE + LOSS ANALYSIS ────────────────────────────────────
 page('leads', {
@@ -329,6 +330,12 @@ page('customer', {
     <div data-c360="tasks" hidden>${taskList(tasks)}</div>
     <div data-c360="comms" hidden>${tl}</div>`;
   },
+});
+// #/lead/<id> — deep link (push notifications): the pipeline with that lead open.
+page('lead', {
+  title: 'Pipeline', nav: 'pipeline',
+  render: (...a) => pages_pipeline.render(...a),
+  after: (root, id) => { pages_pipeline.after(root); if (id) openLead(id); },
 });
 register({ newLeadFor: ({ customer }) => openLeadForm({ customer_id: customer }) });
 
