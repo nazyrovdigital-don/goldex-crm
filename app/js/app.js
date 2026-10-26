@@ -45,14 +45,28 @@ export async function loadSettings() {
 export const setting = (k, fallback) => state.settings[k] ?? fallback;
 
 // ── ROUTER ─────────────────────────────────────────────────────────
+// Simple menu: one item per area. Related screens are tabs inside it.
 const NAV = [
-  ['Overview', [['dashboard', '⬡', 'Dashboard']]],
-  ['Sales', [['pipeline', '◈', 'Pipeline', 'leads'], ['leads', '◎', 'Leads'], ['estimates', '◇', 'Estimates'], ['proposals', '◻', 'Proposals']]],
-  ['Operations', [['projects', '▣', 'Projects'], ['tasks', '☑', 'Tasks', 'tasks'], ['calendar', '▦', 'Calendar']]],
-  ['Customers', [['customers', '◉', 'Customers']]],
-  ['Finance', [['invoices', '▤', 'Invoices', 'ar'], ['payments', '◈', 'Payments'], ['expenses', '▥', 'Expenses'], ['time', '◷', 'Time & Labor']]],
-  ['Setup', [['pricebook', '▦', 'Price Book'], ['settings', '⚙', 'Settings']]],
+  ['dashboard', '🏠', 'Today'],
+  ['pipeline', '🎯', 'Leads', 'leads'],
+  ['estimates', '📝', 'Quotes'],
+  ['projects', '🔨', 'Jobs'],
+  ['customers', '👥', 'Customers'],
+  ['invoices', '💵', 'Money', 'ar'],
+  ['tasks', '✅', 'Tasks', 'tasks'],
+  null,
+  ['pricebook', '📒', 'Price Book'],
+  ['settings', '⚙️', 'Settings'],
 ];
+const GROUPS = [
+  { nav: 'pipeline', title: 'Leads', tabs: [['pipeline', 'Board'], ['leads', 'List']], also: ['lead'] },
+  { nav: 'estimates', title: 'Quotes', tabs: [['estimates', 'Estimates'], ['proposals', 'Proposals']], also: ['estimate', 'proposal'] },
+  { nav: 'projects', title: 'Jobs', tabs: [], also: ['project'] },
+  { nav: 'customers', title: 'Customers', tabs: [], also: ['customer'] },
+  { nav: 'invoices', title: 'Money', tabs: [['invoices', 'Invoices'], ['payments', 'Payments'], ['expenses', 'Expenses'], ['time', 'Hours']] },
+  { nav: 'tasks', title: 'Tasks', tabs: [['tasks', 'To-do'], ['calendar', 'Calendar']] },
+];
+const groupOf = (name) => GROUPS.find((g) => g.nav === name || g.tabs.some(([t]) => t === name) || (g.also || []).includes(name));
 const pages = {};
 export const page = (name, def) => { pages[name] = def; };
 
@@ -69,13 +83,17 @@ export async function render() {
   }
   const p = pages[name] || pages.dashboard;
   current = { name: pages[name] ? name : 'dashboard', params };
-  document.querySelectorAll('.nav-item, .mobile-tabs a').forEach((n) => n.classList.toggle('active', n.dataset.page === (p.nav || current.name)));
-  document.getElementById('page-title').textContent = typeof p.title === 'function' ? '' : p.title;
+  const group = groupOf(current.name);
+  const navId = group?.nav || p.nav || current.name;
+  document.querySelectorAll('.nav-item, .mobile-tabs a').forEach((n) => n.classList.toggle('active', n.dataset.page === navId));
+  document.getElementById('page-title').textContent = group?.title || p.title;
+  const subtabs = group && group.tabs.some(([t]) => t === current.name) && group.tabs.length > 1
+    ? String(html`<div class="subtabs">${group.tabs.map(([t, l]) => html`<a href="#/${t}" class="${t === current.name ? 'on' : ''}">${l}</a>`)}</div>`) : '';
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('open');
   const root = document.getElementById('content');
   try {
-    root.innerHTML = String(await p.render(...params));
+    root.innerHTML = subtabs + String(await p.render(...params));
     await p.after?.(root, ...params);
   } catch (e) {
     console.error(e);
@@ -87,12 +105,9 @@ export const refresh = () => render();
 window.addEventListener('hashchange', render);
 
 function drawNav() {
-  document.getElementById('nav').innerHTML = NAV.map(([label, items]) => String(html`
-    <div class="nav-section"><div class="nav-label">${label}</div>
-      ${items.map(([id, icon, text, badgeKey]) => html`
-        <a class="nav-item" data-page="${id}" href="#/${id}"><span class="icon">${icon}</span>${text}
-          ${badgeKey ? html`<span class="nav-badge" id="badge-${badgeKey}" hidden></span>` : ''}</a>`)}
-    </div>`)).join('');
+  document.getElementById('nav').innerHTML = NAV.map((item) => item ? String(html`
+    <a class="nav-item" data-page="${item[0]}" href="#/${item[0]}"><span class="icon">${item[1]}</span>${item[2]}
+      ${item[3] ? html`<span class="nav-badge" id="badge-${item[3]}" hidden></span>` : ''}</a>`) : '<div class="nav-sep"></div>').join('');
 }
 
 export async function refreshBadges() {

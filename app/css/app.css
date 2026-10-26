@@ -27,11 +27,7 @@
   --shadow:none; --shadow-lg:0 12px 32px rgba(0,0,0,.45); --overlay:rgba(3,8,16,.72);
   color-scheme:dark;
 }
-/* The sidebar is always Ocean Navy — GOLDEX's brand color. */
-.sidebar,.login .brand-panel{
-  --navy-800:#0B1A2E; --navy-700:#132B4A; --line:#1F3858; --text:#E6ECF5; --muted:#A7B6CB; --muted2:#7086A4;
-  --white:#FFFFFF; --gold-light:#E9BC45; --gold-soft:rgba(233,188,69,.14);
-}
+
 html,body{height:100%;font-family:var(--ff);background:var(--navy-900);color:var(--text);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 [hidden]{display:none!important}
 button{font-family:var(--ff);cursor:pointer;border:none;outline:none;background:none;color:inherit}
@@ -322,3 +318,31 @@ tfoot td{font-weight:600;color:var(--white);border-top:1px solid var(--line-2)}
   .app{display:none!important}
   .doc{padding:0}
 }
+
+/* ── Simple navigation ─────────────────────────────────────────── */
+.sidebar{box-shadow:1px 0 0 var(--line)}
+#nav{padding:10px 0}
+.nav-item{margin:2px 10px;border-radius:10px;border-left:none;padding:10px 12px;font-weight:500;color:var(--text)}
+.nav-item .icon{font-size:17px;width:22px}
+.nav-item.active{background:var(--gold-soft);color:var(--white);font-weight:600;box-shadow:inset 3px 0 0 var(--gold)}
+.nav-sep{height:1px;background:var(--line);margin:10px 18px}
+.subtabs{display:inline-flex;gap:4px;background:var(--navy-600);padding:4px;border-radius:12px;margin-bottom:18px;flex-wrap:wrap}
+.subtabs a{padding:7px 16px;border-radius:9px;font-size:14px;font-weight:500;color:var(--muted)}
+.subtabs a:hover{color:var(--text)}
+.subtabs a.on{background:var(--navy-800);color:var(--white);box-shadow:var(--shadow)}
+/* Today screen */
+.big-tiles .kpi{padding:18px 20px}
+.big-tiles .kpi-val{font-size:30px}
+.kpi-ico{font-size:20px;margin-bottom:6px}
+.kpi.click{cursor:pointer;transition:transform .12s,box-shadow .12s}
+.kpi.click:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.row-ico{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.list-item.click{padding:11px 4px;border-radius:8px}
+.list-item.click:hover{background:var(--hover)}
+details.more{margin-top:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;
+  background:var(--navy-800);border:1px solid var(--line);box-shadow:var(--shadow);font-weight:500;color:var(--muted)}
+details.more>summary::before{content:'▸';transition:transform .15s}
+details.more[open]>summary::before{transform:rotate(90deg)}
+details.more>summary::-webkit-details-marker{display:none}
+.mobile-tabs a span{font-size:20px}
