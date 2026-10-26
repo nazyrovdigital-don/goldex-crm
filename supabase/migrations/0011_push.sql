@@ -53,7 +53,8 @@ create or replace function public.push_setup(p_url text, p_secret text) returns 
 language plpgsql security definer set search_path = public, vault as $$
 declare sid uuid;
 begin
-  if current_role_name() is distinct from 'owner' and current_user <> 'postgres' then raise exception 'Owner only'; end if;
+  -- Owner in the app, or an administrator running it from the SQL editor / CLI (no app login).
+  if auth.uid() is not null and current_role_name() is distinct from 'owner' then raise exception 'Owner only'; end if;
   if not exists (select 1 from pg_extension where extname = 'pg_net') then create extension if not exists pg_net; end if;
   select id into sid from vault.secrets where name = 'push_secret';
   if sid is null then perform vault.create_secret(p_secret, 'push_secret', 'Shared secret for the push-send edge function');
