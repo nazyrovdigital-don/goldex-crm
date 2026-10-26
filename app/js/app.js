@@ -171,6 +171,10 @@ document.getElementById('bell').onclick = async () => {
     ${items.length ? items.map((n) => html`<div class="notif ${n.read_at ? '' : 'unread'} ${n.entity_type === 'lead' ? 'click' : ''}" data-act="openNotif" data-id="${n.id}" data-entity="${n.entity_type || ''}" data-ref="${n.entity_id || ''}">
         <div>${n.title}</div>${n.body ? html`<div class="small muted">${n.body}</div>` : ''}<div class="when">${ago(n.created_at)}</div></div>`)
       : html`<div class="empty small">Nothing yet</div>`}`);
+  // Open the panel right under the bell (which sits on the left now).
+  const b = document.getElementById('bell').getBoundingClientRect(); const m = document.querySelector('.main').getBoundingClientRect();
+  panel.style.left = Math.max(8, Math.min(b.left - m.left, m.width - Math.min(380, m.width - 24) - 8)) + 'px';
+  panel.style.right = 'auto';
   panel.hidden = false;
 };
 register({
