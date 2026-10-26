@@ -192,6 +192,7 @@ async function start() {
   drawNav();
   document.getElementById('sidebar-foot').innerHTML = String(html`
     <div>${state.me.first_name} ${state.me.last_name}</div><div class="small">${state.me.role} · ${DEMO ? 'demo mode' : 'Supabase'}</div>
+    <div class="theme-toggle" data-act="toggleTheme">${document.documentElement.dataset.theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'}</div>
     ${DEMO ? '' : html`<button class="btn btn-link" style="padding-left:0" data-act="signOut">Sign out</button>`}`);
   if (DEMO) {
     const b = document.getElementById('demo-banner');
@@ -228,6 +229,13 @@ function showLogin() {
 }
 
 register({
+  toggleTheme: (_d, el) => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    if (dark) document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem('gx-theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
+    document.querySelector('meta[name=theme-color]').content = dark ? '#0B1A2E' : '#FFFFFF';
+    el.textContent = dark ? '☀ Light mode' : '☾ Dark mode';
+  },
   signOut: async () => { await db.auth.signOut(); location.reload(); },
   quickAdd: () => modal('Quick add', html`<div class="grid-2" style="margin:0">
     ${[['newLead', '◎', 'New Lead'], ['newCustomer', '◉', 'New Customer'], ['newTask', '☑', 'New Task'],
